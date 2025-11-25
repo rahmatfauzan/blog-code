@@ -43,9 +43,7 @@ export function TrendingSection({ trendingSnippets }: TrendingSectionProps) {
   // State Kosong
   if (!trendingSnippets || trendingSnippets.length === 0) {
     return (
-      <section
-        className="py-20 bg-gradient-to-b from-white to-slate-50 dark:from-slate-950 dark:to-slate-900"
-      >
+      <section className=" bg-gradient-to-b from-white to-slate-50 dark:from-slate-950 dark:to-slate-900">
         <div className="container mx-auto px-4 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

@@ -116,4 +116,71 @@ export const documents = {
 
     return transformed;
   },
+
+  async getPublicDocuments({
+    query,
+    language,
+    page = 1,
+    limit = 12,
+  }: {
+    query?: string;
+    language?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const supabase = await createClient();
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    // 1. Base Query
+    let dbQuery = supabase
+      .from("documents")
+      .select(
+        `
+        *,
+        author:profiles!author_id ( full_name, username, avatar_url ),
+        document_tags!inner ( tag:tags ( name, slug ) ),
+        likes(count),
+        bookmarks(count)
+      `,
+        { count: "exact" }
+      )
+      .eq("status", "published")
+      .eq("visibility", "public");
+
+    // 2. Apply Filters Dinamis
+    if (language && language !== "all") {
+      dbQuery = dbQuery.eq("language", language);
+    }
+
+    if (query) {
+      // Search di Title ATAU Description (ilike = case insensitive)
+      dbQuery = dbQuery.or(`title.ilike.%${query}%,description.ilike.%${query}%`);
+    }
+
+    // 3. Pagination & Ordering
+    const { data, error, count } = await dbQuery
+      .order("created_at", { ascending: false })
+      .range(from, to);
+
+    if (error) {
+      console.error("Explore Error:", error);
+      return { data: [], total: 0 };
+    }
+
+    // 4. Transform Data (Sama seperti sebelumnya)
+    const transformed = data?.map((doc: any) => ({
+      ...doc,
+      tags: doc.document_tags.map((dt: any) => dt.tag),
+      like_count: doc.likes?.[0]?.count || 0,
+      bookmark_count: doc.bookmarks?.[0]?.count || 0,
+      document_tags: undefined,
+      likes: undefined,
+      bookmarks: undefined,
+    })) as any[]; // Gunakan tipe SnippetWithAuthor jika strict
+
+    return { data: transformed, total: count || 0 };
+  },
+
+  
 };

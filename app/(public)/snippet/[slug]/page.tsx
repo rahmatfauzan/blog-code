@@ -88,16 +88,16 @@ export default async function PublicSnippetPage({ params }: PageProps) {
   );
 
   return (
-    <div className="container mx-auto max-w-5xl px-4 py-5 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="container mx-auto max-w-5xl px-4 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Komponen Invisible untuk increment view */}
       <ViewCounter documentId={snippet.id} />
 
       {/* --- HEADER SECTION --- */}
-      <div className="space-y-6 mb-10 mt-6">
+      <div className="space-y-6 mb-2 mt-6">
         {/* Badges: Language & Visibility */}
         <div className="flex flex-wrap items-center gap-3 justify-between">
           <BackButton />
-          <div>
+          <div className="flex items-center gap-2">
             <Badge
               variant="secondary"
               className="gap-1.5 py-1 px-3 text-sm font-medium bg-slate-100 dark:bg-slate-800"
@@ -139,7 +139,7 @@ export default async function PublicSnippetPage({ params }: PageProps) {
                   variant="outline"
                   className="cursor-pointer hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-colors"
                 >
-                  #{tag.name}
+                  #{tag.name}t
                 </Badge>
               </Link>
             ))}
@@ -147,9 +147,9 @@ export default async function PublicSnippetPage({ params }: PageProps) {
         )}
 
         {/* Meta Info Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-4 text-sm text-slate-500 dark:text-slate-400 pt-4 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex flex-wrap items-start sm:items-center  justify-between gap-4 text-sm text-slate-500 dark:text-slate-400 pt-4 border-t border-slate-100 dark:border-slate-800">
           {/* Author & Date */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 sm:gap-6 flex-col sm:flex-row justify-center">
             <div className="flex items-center gap-2">
               <Avatar className="h-8 w-8 border border-slate-200 dark:border-slate-700">
                 <AvatarImage src={snippet.author?.avatar_url || ""} />
@@ -161,11 +161,6 @@ export default async function PublicSnippetPage({ params }: PageProps) {
                 </span>
                 <span className="text-xs">@{authorUsername}</span>
               </div>
-            </div>
-
-            <div className="flex items-center gap-1.5" title="Created At">
-              <Calendar className="h-4 w-4" />
-              <span>{formattedDate}</span>
             </div>
           </div>
 
@@ -197,18 +192,23 @@ export default async function PublicSnippetPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* --- ACTIONS & CODE --- */}
-      <div className="flex flex-col gap-6">
-        {/* Action Buttons (Like/Bookmark) */}
+      <div className="flex items-center justify-between mb-10">
+        <div
+          className="flex items-center gap-1.5 text-xs md:text-sm"
+          title="Created At"
+        >
+          <Calendar className="h-4 w-4" />
+          <span>{formattedDate}</span>
+        </div>
         <div className="flex justify-end">
           <SnippetActions
             documentId={snippet.id}
             initialLikeCount={snippet.likes || 0}
-            // Nanti kita tambah prop initialHasLiked jika query support
           />
         </div>
+      </div>
 
-        {/* Code Viewer */}
+      <div className="flex flex-col gap-6">
         <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm">
           {snippet.content ? (
             <CodeViewer code={snippet.content} language={snippet.language} />

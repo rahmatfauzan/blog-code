@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function TrendingSkeleton() {
   return (
-    <section className="py-20 bg-white dark:bg-slate-950">
+    <section className=" bg-white dark:bg-slate-950">
       <div className="container mx-auto px-4">
         {/* Header Skeleton */}
         <div className="text-center mb-12 space-y-4">
