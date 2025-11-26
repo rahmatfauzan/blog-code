@@ -215,19 +215,6 @@ export function TrendingSection({ trendingSnippets }: TrendingSectionProps) {
               />
             </motion.button>
           </Link>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={isInView ? { opacity: 1 } : {}}
-            transition={{ delay: 1 }}
-            className="mt-6 text-sm text-slate-500 dark:text-slate-400"
-          >
-            Jelajahi{" "}
-            <span className="font-semibold text-indigo-600 dark:text-indigo-400">
-              1000+ snippets
-            </span>{" "}
-            dari komunitas
-          </motion.p>
         </motion.div>
       </div>
     </section>

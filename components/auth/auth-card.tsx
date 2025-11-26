@@ -75,7 +75,7 @@ export const AuthCard = ({
         whileHover={{ scale: 1.02 }}
         className="w-full max-w-md mx-auto"
       >
-        <Card className="rounded-2xl shadow-2xl overflow-hidden border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pt-0">
+        <Card className="rounded-2xl shadow-2xl overflow-hidden border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-0">
           {/* Header dengan animasi elastic terpisah */}
           <div className="bg-gradient-to-br from-indigo-600 via-indigo-600 to-violet-600 text-white p-8 space-y-2 relative overflow-hidden">
             {/* Pola Dekoratif */}
@@ -144,7 +144,7 @@ export const AuthCard = ({
                 damping: 25,
                 delay: 0.5,
               }}
-              className="px-8 bg-slate-50 dark:bg-slate-950/50 text-center text-sm border-t border-slate-100 dark:border-slate-800"
+              className="px-8 py-4 bg-slate-50 dark:bg-slate-950/50 text-center text-sm border-t border-slate-100 dark:border-slate-800"
             >
               <p className="text-slate-600 dark:text-slate-400">
                 {backButtonHref === "/login"
