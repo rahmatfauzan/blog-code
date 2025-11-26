@@ -232,4 +232,56 @@ export const documents = {
 
     return transformed;
   },
+
+  async getMyDocuments({
+    userId,
+    query,
+    page = 1,
+    limit = 10,
+  }: {
+    userId: string;
+    query?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const supabase = await createClient();
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    let dbQuery = supabase
+      .from("documents")
+      .select(
+        `
+        *,
+        author:profiles!author_id ( full_name, username, avatar_url ),
+        document_tags ( tag:tags ( name, slug ) ),
+        likes(count),
+        bookmarks(count)
+      `,
+        { count: "exact" }
+      )
+      .eq("author_id", userId); // Filter by User ID
+
+    // Filter Search (Judul)
+    if (query) {
+      dbQuery = dbQuery.ilike("title", `%${query}%`);
+    }
+
+    const { data, error, count } = await dbQuery
+      .order("updated_at", { ascending: false }) // Urutkan berdasarkan yang terakhir diedit
+      .range(from, to);
+
+    if (error) return { data: [], total: 0 };
+
+    // Transform
+    const transformed = data.map((doc: any) => ({
+      ...doc,
+      tags: doc.document_tags.map((dt: any) => dt.tag),
+      likes: doc.likes?.[0]?.count || 0,
+      bookmarks: doc.bookmarks?.[0]?.count || 0,
+      document_tags: undefined,
+    }));
+
+    return { data: transformed, total: count || 0 };
+  },
 };
