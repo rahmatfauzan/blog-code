@@ -120,11 +120,13 @@ export const documents = {
   async getPublicDocuments({
     query,
     language,
+    authorId,
     page = 1,
     limit = 12,
   }: {
     query?: string;
     language?: string;
+    authorId?: string; // ✅ Tambahan: opsional
     page?: number;
     limit?: number;
   }) {
@@ -137,25 +139,32 @@ export const documents = {
       .from("documents")
       .select(
         `
-        *,
-        author:profiles!author_id ( full_name, username, avatar_url ),
-        document_tags!inner ( tag:tags ( name, slug ) ),
-        likes(count),
-        bookmarks(count)
-      `,
+      *,
+      author:profiles!author_id ( full_name, username, avatar_url ),
+      document_tags!inner ( tag:tags ( name, slug ) ),
+      likes(count),
+      bookmarks(count)
+    `,
         { count: "exact" }
       )
       .eq("status", "published")
       .eq("visibility", "public");
 
     // 2. Apply Filters Dinamis
+
+    // ✅ Filter by Author ID (jika ada)
+    if (authorId) {
+      dbQuery = dbQuery.eq("author_id", authorId);
+    }
+
     if (language && language !== "all") {
       dbQuery = dbQuery.eq("language", language);
     }
 
     if (query) {
-      // Search di Title ATAU Description (ilike = case insensitive)
-      dbQuery = dbQuery.or(`title.ilike.%${query}%,description.ilike.%${query}%`);
+      dbQuery = dbQuery.or(
+        `title.ilike.%${query}%,description.ilike.%${query}%`
+      );
     }
 
     // 3. Pagination & Ordering
@@ -168,19 +177,15 @@ export const documents = {
       return { data: [], total: 0 };
     }
 
-    // 4. Transform Data (Sama seperti sebelumnya)
+    // 4. Transform Data
     const transformed = data?.map((doc: any) => ({
       ...doc,
       tags: doc.document_tags.map((dt: any) => dt.tag),
-      like_count: doc.likes?.[0]?.count || 0,
-      bookmark_count: doc.bookmarks?.[0]?.count || 0,
+      likes: doc.likes?.[0]?.count || 0,
+      bookmarks: doc.bookmarks?.[0]?.count || 0,
       document_tags: undefined,
-      likes: undefined,
-      bookmarks: undefined,
-    })) as any[]; // Gunakan tipe SnippetWithAuthor jika strict
+    })) as any[];
 
     return { data: transformed, total: count || 0 };
   },
-
-  
 };

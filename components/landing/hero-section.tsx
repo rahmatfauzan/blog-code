@@ -72,7 +72,7 @@ export function HeroSection() {
 
           {/* Clean heading with darker text */}
           <motion.div variants={itemVariants} className="space-y-6">
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight text-slate-900 dark:text-white leading-[1.1]">
+            <h1 className="text-3xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight text-slate-900 dark:text-white leading-[1.1]">
               Simpan, Atur, &{" "}
               <span className="text-indigo-600 dark:text-indigo-400">
                 Gunakan Kembali
@@ -132,7 +132,7 @@ export function HeroSection() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1, duration: 0.5 }}
         onClick={scrollToNextSection}
-        className="absolute bottom-20 sm:bottom-24 md:bottom-16 left-1/2 -translate-x-1/2 z-20 cursor-pointer group"
+        className="absolute bottom-24 sm:bottom-24 md:bottom-16 left-1/2 -translate-x-1/2 z-20 cursor-pointer group"
       >
         <motion.div
           animate={{ y: [0, 8, 0] }}
