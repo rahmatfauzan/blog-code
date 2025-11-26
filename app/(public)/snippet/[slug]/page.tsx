@@ -88,7 +88,7 @@ export default async function PublicSnippetPage({ params }: PageProps) {
   );
 
   return (
-    <div className="container mx-auto max-w-5xl px-4 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="container mx-auto max-w-6xl px-4 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Komponen Invisible untuk increment view */}
       <ViewCounter documentId={snippet.id} />
 

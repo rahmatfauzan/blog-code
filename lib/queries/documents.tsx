@@ -188,4 +188,48 @@ export const documents = {
 
     return { data: transformed, total: count || 0 };
   },
+
+  async getBookmarked(userId: string) {
+    const supabase = await createClient();
+
+    // Kita mulai select dari tabel 'bookmarks', lalu join ke 'documents'
+    const { data, error } = await supabase
+      .from("bookmarks")
+      .select(
+        `
+        document:documents!inner (
+          *,
+          author:profiles!author_id ( full_name, username, avatar_url ),
+          document_tags ( tag:tags ( name, slug ) ),
+          likes(count),
+          bookmarks(count)
+        )
+      `
+      )
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false }); // Bookmark terbaru di atas
+
+    if (error || !data) {
+      console.error("Error bookmarks:", error);
+      return [];
+    }
+
+    // Transformasi Data
+    // Karena struktur awalnya: [{ document: { ... } }, { document: { ... } }]
+    const transformed = data.map((item: any) => {
+      const doc = item.document; // Ambil object document di dalamnya
+
+      return {
+        ...doc,
+        tags: doc.document_tags.map((dt: any) => dt.tag),
+        // SESUAI REQUEST: Pakai 'likes' & 'bookmarks'
+        likes: doc.likes?.[0]?.count || 0,
+        bookmarks: doc.bookmarks?.[0]?.count || 0,
+
+        document_tags: undefined,
+      };
+    });
+
+    return transformed;
+  },
 };

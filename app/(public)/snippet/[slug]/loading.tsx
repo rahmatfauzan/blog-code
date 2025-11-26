@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SnippetLoading() {
   return (
-    <div className="container mx-auto max-w-5xl px-4 py-8 pb-24">
+    <div className="container mx-auto max-w-6xl px-4 py-8 pb-24">
       {/* Back Button */}
       <Skeleton className="h-10 w-32 mb-6 rounded-lg" />
 
