@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ExploreLoading() {
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-10">
+    <div className="container mx-auto max-w-7xl">
       {/* Header Skeleton */}
       <div className="mb-8 space-y-2">
         <Skeleton className="h-8 w-48 rounded-lg" />

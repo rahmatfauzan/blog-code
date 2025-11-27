@@ -12,10 +12,11 @@ import {
   Code,
   Globe,
   Lock,
-  LayoutTemplate,
   Sparkles,
   Tag,
   X,
+  Trash2,
+  AlertTriangle,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -48,6 +49,17 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 // Logic & Validation
 import {
@@ -55,7 +67,11 @@ import {
   type SnippetFormValues,
   languageOptions,
 } from "@/lib/validation/snippet";
-import { createSnippet, updateSnippet } from "@/lib/actions/snippets";
+import {
+  createSnippet,
+  updateSnippet,
+  deleteSnippet,
+} from "@/lib/actions/snippets";
 import { TagInput } from "./tag-input";
 import { AIMetaGenerator } from "./ai-meta-generator";
 
@@ -68,18 +84,18 @@ const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.05 },
+    transition: { staggerChildren: 0.03 },
   },
 };
 
 const itemVariants = {
-  hidden: { y: 10, opacity: 0 },
+  hidden: { y: 8, opacity: 0 },
   visible: {
     y: 0,
     opacity: 1,
     transition: {
       type: "spring" as const,
-      stiffness: 120,
+      stiffness: 150,
       damping: 20,
     },
   },
@@ -91,6 +107,7 @@ export function SnippetForm({
 }: SnippetFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [isDeleting, setIsDeleting] = useState(false);
   const [tagSuggestions, setTagSuggestions] = useState<string[]>(existingTags);
   const isEditing = !!initialData;
 
@@ -114,12 +131,12 @@ export function SnippetForm({
 
   const titleValue = form.watch("title");
   const metaTitleValue = form.watch("meta_title");
-  const statusValue = form.watch("status");
-  const visibilityValue = form.watch("visibility");
   const languageValue = form.watch("language");
   const currentTags = form.watch("tags");
+  const descriptionValue = form.watch("description");
+  const visibilityValue = form.watch("visibility");
 
-  // Filter tag suggestions based on current tags and language
+  // Filter tag suggestions
   useEffect(() => {
     const languageTags = {
       javascript: ["js", "es6", "node", "frontend", "async"],
@@ -175,449 +192,511 @@ export function SnippetForm({
     });
   };
 
+  // Handle Delete
+  const handleDelete = async () => {
+    if (!initialData?.id) return;
+
+    setIsDeleting(true);
+    try {
+      const result = await deleteSnippet(initialData.id);
+      if (result.error) {
+        toast.error("Gagal menghapus", { description: result.error });
+      } else {
+        toast.success("Snippet berhasil dihapus");
+        router.push("/dashboard/snippets");
+        router.refresh();
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Terjadi kesalahan sistem");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <Form {...form}>
-      <motion.form
-        onSubmit={form.handleSubmit(onSubmit)}
+      <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="space-y-4"
+        className="max-w-6xl mx-auto p-4 space-y-3"
       >
-        {/* STICKY HEADER */}
-        <div
+        {/* Action Buttons - Right Aligned */}
+        <motion.div
+          variants={itemVariants}
+          className="flex items-center justify-end gap-2"
         >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between py-3">
-
-              <div className="flex items-center gap-2">
+          {isEditing && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
                 <Button
                   type="button"
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  onClick={() => router.back()}
-                  disabled={isPending}
-                  className="h-8 text-white hover:bg-white/20"
+                  disabled={isPending || isDeleting}
+                  className="h-8 text-red-600 hover:bg-red-50 hover:text-red-700 border-red-200"
                 >
-                  <X className="h-4 w-4 mr-1" />
-                  Batal
+                  <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                  Hapus
                 </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={isPending}
-                  className="h-8 bg-white text-indigo-600 hover:bg-white/90 shadow-lg"
-                >
-                  {isPending ? (
-                    <>
-                      <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-1 h-3 w-3" />
-                      {isEditing ? "Update" : "Simpan"}
-                    </>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-red-500" />
+                    Hapus Snippet?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tindakan ini tidak dapat dibatalkan. Snippet akan dihapus
+                    secara permanen.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Batal</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    {isDeleting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Menghapus...
+                      </>
+                    ) : (
+                      "Ya, Hapus"
+                    )}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => router.back()}
+            disabled={isPending || isDeleting}
+            className="h-8"
+          >
+            <X className="h-3.5 w-3.5 mr-1.5" />
+            Batal
+          </Button>
+
+          <Button
+            type="button"
+            onClick={form.handleSubmit(onSubmit)}
+            size="sm"
+            disabled={isPending || isDeleting}
+            className="h-8"
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                Menyimpan...
+              </>
+            ) : (
+              <>
+                <Save className="mr-1.5 h-3.5 w-3.5" />
+                {isEditing ? "Update" : "Simpan"}
+              </>
+            )}
+          </Button>
+        </motion.div>
+
+        {/* Main Content - 2 Column Compact */}
+        <div className="grid gap-3 lg:grid-cols-[1fr_320px]">
+          {/* LEFT COLUMN */}
+          <div className="space-y-3">
+            {/* Title & Language - Inline */}
+            <motion.div
+              variants={itemVariants}
+              className="rounded-lg border border-slate-800 bg-slate-900 p-3"
+            >
+              <div className="flex gap-2">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel className="text-xs font-medium">
+                        Judul <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Nama snippet..."
+                          className="h-8 text-sm"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs" />
+                    </FormItem>
                   )}
-                </Button>
+                />
+
+                <FormField
+                  control={form.control}
+                  name="language"
+                  render={({ field }) => (
+                    <FormItem className="w-32">
+                      <FormLabel className="text-xs font-medium">
+                        Bahasa <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {languageOptions.map((lang) => (
+                            <SelectItem
+                              key={lang.value}
+                              value={lang.value}
+                              className="text-xs"
+                            >
+                              {lang.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage className="text-xs" />
+                    </FormItem>
+                  )}
+                />
               </div>
-            </div>
-          </div>
-        </div>
+            </motion.div>
 
-        {/* MAIN CONTENT */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-          <div className="grid gap-4 lg:grid-cols-3">
-            {/* LEFT COLUMN */}
-            <div className="lg:col-span-2 space-y-4">
-              {/* Title & Language */}
-              <motion.div
-                variants={itemVariants}
-                className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4"
-              >
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <div className="sm:col-span-2">
-                    <FormField
-                      control={form.control}
-                      name="title"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                            Judul Snippet{" "}
-                            <span className="text-red-500">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Contoh: React Custom Hook untuk API"
-                              className="h-9 text-sm"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage className="text-xs" />
-                        </FormItem>
-                      )}
-                    />
+            {/* Description - Compact */}
+            <motion.div
+              variants={itemVariants}
+              className="rounded-lg border border-slate-800 bg-slate-900 p-3"
+            >
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs font-medium">
+                      Deskripsi
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Jelaskan fungsi snippet..."
+                        className="resize-none h-16 text-xs"
+                        {...field}
+                        value={field.value || ""}
+                      />
+                    </FormControl>
+                    <FormDescription className="text-xs flex justify-between">
+                      <span className="text-muted-foreground">Opsional</span>
+                      <span className="text-muted-foreground">
+                        {descriptionValue?.length || 0}
+                      </span>
+                    </FormDescription>
+                  </FormItem>
+                )}
+              />
+            </motion.div>
+
+            {/* Code Editor - Compact */}
+            <motion.div
+              variants={itemVariants}
+              className="rounded-lg border overflow-hidden bg-slate-950"
+            >
+              <div className="bg-slate-900 px-3 py-1.5 flex items-center justify-between border-b border-slate-800">
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1">
+                    <div className="h-2 w-2 rounded-full bg-red-500"></div>
+                    <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
+                    <div className="h-2 w-2 rounded-full bg-green-500"></div>
                   </div>
+                  <span className="text-[10px] text-slate-500 font-mono">
+                    {languageValue}
+                  </span>
+                </div>
+                <Badge
+                  variant="outline"
+                  className="text-[10px] h-4 bg-slate-800 border-slate-700"
+                >
+                  <Code className="h-2.5 w-2.5 mr-1" />
+                  Editor
+                </Badge>
+              </div>
 
+              <FormField
+                control={form.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        placeholder="// Code here..."
+                        className="min-h-[300px] font-mono text-xs border-0 rounded-none resize-y bg-slate-950 text-slate-100 placeholder:text-slate-600 focus-visible:ring-0"
+                      />
+                    </FormControl>
+                    <FormMessage className="px-3 pb-2 text-xs" />
+                  </FormItem>
+                )}
+              />
+            </motion.div>
+          </div>
+
+          {/* RIGHT COLUMN - Sidebar */}
+          <div className="space-y-3">
+            {/* Settings - Compact */}
+            <motion.div
+              variants={itemVariants}
+              className="rounded-lg border border-slate-800 bg-slate-900 p-3"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-semibold flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
+                    Pengaturan
+                  </h3>
+                  <Badge
+                    variant={
+                      visibilityValue === "public" ? "default" : "secondary"
+                    }
+                    className="text-[10px] h-5"
+                  >
+                    {visibilityValue === "public" ? (
+                      <>
+                        <Globe className="h-2.5 w-2.5 mr-1" />
+                        Public
+                      </>
+                    ) : (
+                      <>
+                        <Lock className="h-2.5 w-2.5 mr-1" />
+                        Private
+                      </>
+                    )}
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
                   <FormField
                     control={form.control}
-                    name="language"
+                    name="visibility"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          Bahasa <span className="text-red-500">*</span>
+                        <FormLabel className="text-[10px] font-medium">
+                          Visibilitas
                         </FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value}
                         >
                           <FormControl>
-                            <SelectTrigger className="h-9 text-sm">
+                            <SelectTrigger className="h-7 text-[10px]">
                               <SelectValue />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {languageOptions.map((lang) => (
-                              <SelectItem key={lang.value} value={lang.value}>
-                                {lang.label}
-                              </SelectItem>
-                            ))}
+                            <SelectItem value="private" className="text-xs">
+                              <span className="flex items-center gap-1">
+                                <Lock className="w-2.5 h-2.5" /> Private
+                              </span>
+                            </SelectItem>
+                            <SelectItem value="public" className="text-xs">
+                              <span className="flex items-center gap-1">
+                                <Globe className="w-2.5 h-2.5" /> Public
+                              </span>
+                            </SelectItem>
                           </SelectContent>
                         </Select>
-                        <FormMessage className="text-xs" />
                       </FormItem>
                     )}
                   />
-                </div>
-              </motion.div>
 
-              {/* Code Editor */}
-              <motion.div
-                variants={itemVariants}
-                className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden bg-slate-950"
-              >
-                <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-4 py-2 flex items-center justify-between border-b border-slate-700">
-                  <div className="flex items-center gap-2">
-                    <div className="flex gap-1.5">
-                      <div className="h-2.5 w-2.5 rounded-full bg-red-500"></div>
-                      <div className="h-2.5 w-2.5 rounded-full bg-yellow-500"></div>
-                      <div className="h-2.5 w-2.5 rounded-full bg-green-500"></div>
-                    </div>
-                    <span className="text-xs text-slate-400 font-mono ml-2">
-                      {languageValue}.code
-                    </span>
-                  </div>
-                  <Badge
-                    variant="outline"
-                    className="text-xs h-5 bg-slate-800 border-slate-700 text-slate-300"
-                  >
-                    <Code className="h-3 w-3 mr-1" />
-                    Editor
-                  </Badge>
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="content"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Textarea
-                          {...field}
-                          placeholder="// Tulis kode di sini..."
-                          className="min-h-[300px] font-mono text-sm border-0 rounded-none resize-y bg-slate-950 text-slate-100 placeholder:text-slate-600"
-                        />
-                      </FormControl>
-                      <FormMessage className="px-4 pb-2 text-xs" />
-                    </FormItem>
-                  )}
-                />
-              </motion.div>
-
-              {/* Description */}
-              <motion.div
-                variants={itemVariants}
-                className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4"
-              >
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        Deskripsi
-                      </FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Jelaskan fungsi snippet ini..."
-                          className="resize-none h-20 text-sm"
-                          {...field}
-                          value={field.value || ""}
-                        />
-                      </FormControl>
-                      <FormDescription className="text-xs">
-                        Bantu orang lain memahami snippet Anda
-                      </FormDescription>
-                      <FormMessage className="text-xs" />
-                    </FormItem>
-                  )}
-                />
-              </motion.div>
-            </div>
-
-            {/* RIGHT COLUMN */}
-            <div className="space-y-4">
-              {/* Settings Card */}
-              <motion.div
-                variants={itemVariants}
-                className="rounded-lg border border-indigo-200 dark:border-indigo-900 bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-950/30 dark:to-violet-950/30 p-4"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                      Pengaturan
-                    </h3>
-                    <Badge
-                      variant={
-                        visibilityValue === "public" ? "default" : "secondary"
-                      }
-                      className={
-                        visibilityValue === "public"
-                          ? "bg-indigo-600 text-white text-xs h-5"
-                          : "text-xs h-5"
-                      }
-                    >
-                      {visibilityValue === "public" ? (
-                        <>
-                          <Globe className="h-3 w-3 mr-1" />
-                          Public
-                        </>
-                      ) : (
-                        <>
-                          <Lock className="h-3 w-3 mr-1" />
-                          Private
-                        </>
-                      )}
-                    </Badge>
-                  </div>
-
-                  {/* Tags */}
                   <FormField
                     control={form.control}
-                    name="tags"
+                    name="status"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          Tags
+                        <FormLabel className="text-[10px] font-medium">
+                          Status
                         </FormLabel>
-                        <FormControl>
-                          <TagInput
-                            value={field.value || []}
-                            onChange={field.onChange}
-                            placeholder="Tambahkan tag..."
-                            suggestions={tagSuggestions}
-                          />
-                        </FormControl>
-                        <FormDescription className="text-xs flex justify-between">
-                          <span>Maks. 10 tag</span>
-                          <span className="font-medium text-indigo-600 dark:text-indigo-400">
-                            {field.value?.length || 0}/10
-                          </span>
-                        </FormDescription>
-                        <FormMessage className="text-xs" />
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="h-7 text-[10px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="draft" className="text-xs">
+                              📝 Draft
+                            </SelectItem>
+                            <SelectItem value="published" className="text-xs">
+                              ✅ Published
+                            </SelectItem>
+                            <SelectItem value="archived" className="text-xs">
+                              📦 Archived
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
                       </FormItem>
                     )}
                   />
-
-                  <Separator className="bg-indigo-200 dark:bg-indigo-800" />
-
-                  {/* Grid Settings */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <FormField
-                      control={form.control}
-                      name="visibility"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                            Visibilitas
-                          </FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger className="h-8 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="private">
-                                <span className="flex items-center gap-1.5">
-                                  <Lock className="w-3 h-3" /> Private
-                                </span>
-                              </SelectItem>
-                              <SelectItem value="public">
-                                <span className="flex items-center gap-1.5">
-                                  <Globe className="w-3 h-3" /> Public
-                                </span>
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="status"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                            Status
-                          </FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger className="h-8 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="draft">📝 Draft</SelectItem>
-                              <SelectItem value="published">
-                                ✅ Publish
-                              </SelectItem>
-                              <SelectItem value="archived">
-                                📦 Archive
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
                 </div>
-              </motion.div>
 
-              {/* SEO Accordion */}
-              <motion.div variants={itemVariants}>
-                <Accordion
-                  type="single"
-                  collapsible
-                  className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden"
-                >
-                  <AccordionItem value="seo" className="border-0">
-                    <AccordionTrigger className="px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:no-underline">
-                      <div className="flex items-center gap-2">
-                        <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-                          <Hash className="h-3.5 w-3.5 text-white" />
-                        </div>
-                        <div className="text-left">
-                          <span className="text-xs font-bold block text-slate-900 dark:text-white">
-                            SEO Meta Tags
-                          </span>
-                          <span className="text-xs text-slate-500">
-                            Optimasi pencarian
-                          </span>
-                        </div>
+                <Separator />
+
+                <FormField
+                  control={form.control}
+                  name="tags"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] font-medium flex items-center gap-1">
+                        <Tag className="h-3 w-3" />
+                        Tags
+                      </FormLabel>
+                      <FormControl>
+                        <TagInput
+                          value={field.value || []}
+                          onChange={field.onChange}
+                          placeholder="tag..."
+                          suggestions={tagSuggestions}
+                        />
+                      </FormControl>
+                      <FormDescription className="text-[10px] flex justify-between">
+                        <span>Maks. 10</span>
+                        <span
+                          className={`font-medium ${
+                            (field.value?.length || 0) >= 10
+                              ? "text-red-500"
+                              : ""
+                          }`}
+                        >
+                          {field.value?.length || 0}/10
+                        </span>
+                      </FormDescription>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </motion.div>
+
+            {/* SEO - Compact Accordion */}
+            <motion.div variants={itemVariants}>
+              <Accordion
+                type="single"
+                collapsible
+                className="rounded-lg border border-slate-800 bg-slate-900"
+              >
+                <AccordionItem value="seo" className="border-0">
+                  <AccordionTrigger className="px-3 py-2 hover:bg-slate-800/50 hover:no-underline">
+                    <div className="flex items-center gap-2">
+                      <div className="h-7 w-7 rounded bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                        <Hash className="h-3 w-3 text-white" />
                       </div>
-                    </AccordionTrigger>
+                      <div className="text-left">
+                        <span className="text-xs font-semibold block">SEO</span>
+                        <span className="text-[10px] text-muted-foreground">
+                          Meta tags
+                        </span>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
 
-                    <AccordionContent className="px-4 pb-4 space-y-3">
-                      <AIMetaGenerator />
-                      <Separator />
+                  <AccordionContent className="px-3 pb-3 space-y-2.5">
+                    <AIMetaGenerator />
+                    <Separator />
 
-                      <FormField
-                        control={form.control}
-                        name="meta_title"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                              Meta Title
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                className="h-8 text-xs"
-                                placeholder="SEO title..."
-                              />
-                            </FormControl>
-                            <FormDescription className="text-xs">
-                              {metaTitleValue ||
-                                titleValue ||
-                                "Preview di Google"}
-                            </FormDescription>
-                          </FormItem>
-                        )}
-                      />
+                    <FormField
+                      control={form.control}
+                      name="meta_title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[10px] font-medium">
+                            Meta Title
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              className="h-7 text-xs"
+                              placeholder="SEO title..."
+                            />
+                          </FormControl>
+                          <FormDescription className="text-[10px]">
+                            {metaTitleValue || titleValue || "Preview"}
+                          </FormDescription>
+                        </FormItem>
+                      )}
+                    />
 
-                      <FormField
-                        control={form.control}
-                        name="meta_description"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                              Meta Description
-                            </FormLabel>
-                            <FormControl>
-                              <Textarea
-                                {...field}
-                                className="h-16 resize-none text-xs"
-                                placeholder="Deskripsi untuk Google..."
-                              />
-                            </FormControl>
-                            <FormDescription className="text-xs flex justify-between">
-                              <span>Ideal: 150-160 char</span>
-                              <span
-                                className={
-                                  (field.value?.length || 0) > 160
-                                    ? "text-red-500 font-medium"
-                                    : "text-indigo-600 dark:text-indigo-400 font-medium"
-                                }
-                              >
-                                {field.value?.length || 0}/160
-                              </span>
-                            </FormDescription>
-                          </FormItem>
-                        )}
-                      />
+                    <FormField
+                      control={form.control}
+                      name="meta_description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[10px] font-medium">
+                            Meta Description
+                          </FormLabel>
+                          <FormControl>
+                            <Textarea
+                              {...field}
+                              className="h-14 resize-none text-xs"
+                              placeholder="SEO description..."
+                            />
+                          </FormControl>
+                          <FormDescription className="text-[10px] flex justify-between">
+                            <span>150-160 char</span>
+                            <span
+                              className={
+                                (field.value?.length || 0) > 160
+                                  ? "text-red-500"
+                                  : ""
+                              }
+                            >
+                              {field.value?.length || 0}/160
+                            </span>
+                          </FormDescription>
+                        </FormItem>
+                      )}
+                    />
 
-                      <FormField
-                        control={form.control}
-                        name="meta_keywords"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                              Meta Keywords
-                              <Badge
-                                variant="outline"
-                                className="text-[10px] h-4 px-1"
-                              >
-                                Optional
-                              </Badge>
-                            </FormLabel>
-                            <FormControl>
-                              <TagInput
-                                value={field.value || []}
-                                onChange={field.onChange}
-                                placeholder="keyword..."
-                                suggestions={[]}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              </motion.div>
-            </div>
+                    <FormField
+                      control={form.control}
+                      name="meta_keywords"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[10px] font-medium flex items-center gap-1">
+                            Keywords
+                            <Badge
+                              variant="outline"
+                              className="text-[9px] h-3.5 px-1"
+                            >
+                              Optional
+                            </Badge>
+                          </FormLabel>
+                          <FormControl>
+                            <TagInput
+                              value={field.value || []}
+                              onChange={field.onChange}
+                              placeholder="keyword..."
+                              suggestions={[]}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </motion.div>
           </div>
         </div>
-      </motion.form>
+      </motion.div>
     </Form>
   );
 }
