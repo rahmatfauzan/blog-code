@@ -23,10 +23,9 @@ import { createClient } from "@/lib/supabase/client"; // Pakai Client Supabase
 import { useRouter } from "next/navigation";
 import { useUser } from "@/lib/hook/use-user";
 
-export function UserNav() {
+export function UserNav({ user, profile }: { user: User; profile: any }) {
   const router = useRouter();
   const supabase = createClient();
-  const { user, profile } = useUser();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();

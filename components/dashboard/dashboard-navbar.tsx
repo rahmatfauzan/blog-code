@@ -47,7 +47,7 @@ export function DashboardNavbar({
               Home
             </button>
           </Link>
-          {user && <UserNav />}
+          {user && <UserNav user={user} profile={profile} />}
         </div>
       </div>
     </header>
