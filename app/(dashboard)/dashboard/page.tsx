@@ -152,7 +152,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* --- 4. CONTENT GRID --- */}
-        <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {/* Kolom Kiri: Recent Snippets (2 kolom di desktop) */}
           <div className="lg:col-span-2">
             <div className="flex items-center justify-between mb-4">

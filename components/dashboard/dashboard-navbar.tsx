@@ -39,9 +39,9 @@ export function DashboardNavbar() {
         <div className="flex items-center gap-3">
           <ThemeSwitcher />
           <Link href="/">
-            <Button className="w-full sm:w-auto text-xs border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800">
+            <button className="w-full sm:w-auto text-xs border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800">
               Home
-            </Button>
+            </button>
           </Link>
           {user && <UserNav />}
         </div>
