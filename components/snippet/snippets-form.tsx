@@ -312,7 +312,7 @@ export function SnippetForm({
             {/* Title & Language - Inline */}
             <motion.div
               variants={itemVariants}
-              className="rounded-lg border border-slate-800 bg-slate-900 p-3"
+              className="rounded-lg border p-3"
             >
               <div className="flex gap-2">
                 <FormField
@@ -374,7 +374,7 @@ export function SnippetForm({
             {/* Description - Compact */}
             <motion.div
               variants={itemVariants}
-              className="rounded-lg border border-slate-800 bg-slate-900 p-3"
+              className="rounded-lg border  p-3"
             >
               <FormField
                 control={form.control}
@@ -452,7 +452,7 @@ export function SnippetForm({
             {/* Settings - Compact */}
             <motion.div
               variants={itemVariants}
-              className="rounded-lg border border-slate-800 bg-slate-900 p-3"
+              className="rounded-lg border  p-3"
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -591,7 +591,7 @@ export function SnippetForm({
               <Accordion
                 type="single"
                 collapsible
-                className="rounded-lg border border-slate-800 bg-slate-900"
+                className="rounded-lg border "
               >
                 <AccordionItem value="seo" className="border-0">
                   <AccordionTrigger className="px-3 py-2 hover:bg-slate-800/50 hover:no-underline">

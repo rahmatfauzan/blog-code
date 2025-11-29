@@ -33,13 +33,9 @@ import { User } from "@supabase/supabase-js";
 const sidebarItems = [
   { title: "Overview", href: "/dashboard", icon: LayoutDashboard },
   { title: "My Snippets", href: "/dashboard/snippets", icon: FileCode2 },
-  { title: "Bookmarks", href: "/dashboard/bookmarks", icon: Bookmark },
   { title: "Create New", href: "/dashboard/create", icon: PlusCircle },
   { title: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
-
-
-
 
 export function DashboardSidebar({ user }: { user: User }) {
   const pathname = usePathname();
@@ -71,8 +67,10 @@ export function DashboardSidebar({ user }: { user: User }) {
   // Helper Data User
   const userName = user?.user_metadata?.full_name || "User";
   const userEmail = user?.email || "";
-  const userAvatar = user?.identities?.[0]?.identity_data?.avatar_url ||
-    user.user_metadata.avatar_url || "";
+  const userAvatar =
+    user?.identities?.[0]?.identity_data?.avatar_url ||
+    user.user_metadata.avatar_url ||
+    "";
   const userInitial = userName.charAt(0).toUpperCase();
 
   return (

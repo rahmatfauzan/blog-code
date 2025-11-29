@@ -38,7 +38,7 @@ export function MobileNav({ user }: MobileNavProps) {
     },
     {
       name: "New",
-      href: "/create",
+      href: "/dashboard/create",
       icon: Plus,
       active: pathname === "/create",
       isHighlight: true,
