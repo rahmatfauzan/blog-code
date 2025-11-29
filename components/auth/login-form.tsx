@@ -161,7 +161,7 @@ export const LoginForm = () => {
       </div>
 
       {/* Social Buttons (Grid 2 Kolom) */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="">
         <Button
           variant="outline"
           type="button"
@@ -178,21 +178,6 @@ export const LoginForm = () => {
           )}
         </Button>
 
-        <Button
-          variant="outline"
-          type="button"
-          onClick={() => handleOAuth("github")}
-          disabled={isLoading}
-          className="w-full h-11 border-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
-        >
-          {isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <>
-              <Github className="mr-2 h-4 w-4" /> GitHub
-            </>
-          )}
-        </Button>
       </div>
     </div>
   );

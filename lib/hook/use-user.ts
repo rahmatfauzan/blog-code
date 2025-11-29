@@ -3,32 +3,31 @@
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
-import { Profile } from "../types";
+// Ganti 'any' dengan tipe Profile jika sudah ada di types/index.ts
+// import { Profile } from "@/types";
 
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null); // State baru untuk Profile
+  const [profile, setProfile] = useState<any | null>(null); // Pakai any dulu biar gak error
   const [loading, setLoading] = useState(true);
+
   const supabase = createClient();
 
   useEffect(() => {
-    // Helper: Ambil data profile berdasarkan ID user
-    const fetchProfile = async (userId: string) => {
+    // Fungsi ambil profil
+    const getProfile = async (userId: string) => {
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", userId)
         .single();
 
-      if (!error && data) {
-        setProfile(data);
-      } else {
-        setProfile(null);
-      }
+      if (data) setProfile(data);
+      // Jika error/null, profile tetap null
     };
 
-    // 1. Inisialisasi Awal
-    const init = async () => {
+    // Fungsi utama cek session
+    const getUser = async () => {
       try {
         const {
           data: { user },
@@ -36,18 +35,18 @@ export function useUser() {
         setUser(user);
 
         if (user) {
-          await fetchProfile(user.id);
+          await getProfile(user.id);
         }
       } catch (error) {
-        console.error("Error initializing user:", error);
+        console.log(error);
       } finally {
         setLoading(false);
       }
     };
 
-    init();
+    getUser();
 
-    // 2. Listener Real-time (Login/Logout/Refresh)
+    // Listener perubahan auth (Login/Logout)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -55,10 +54,8 @@ export function useUser() {
       setUser(currentUser);
 
       if (currentUser) {
-        // Jika login, ambil profilnya
-        await fetchProfile(currentUser.id);
+        await getProfile(currentUser.id);
       } else {
-        // Jika logout, kosongkan profil
         setProfile(null);
       }
 
@@ -70,6 +67,5 @@ export function useUser() {
     };
   }, []);
 
-  // Return lengkap: User Auth + Profile Database
   return { user, profile, loading };
 }

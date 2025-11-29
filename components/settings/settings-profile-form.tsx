@@ -71,7 +71,8 @@ export function ProfileForm({ profile }: ProfileFormProps) {
   const handleRandomizeAvatar = (e: React.MouseEvent) => {
     e.preventDefault();
     const randomSeed = Math.random().toString(36).substring(7);
-    const newUrl = `https://api.dicebear.com/9.x/avataaars/svg?seed=${randomSeed}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
+    const newUrl = `https://api.dicebear.com/9.x/notionists/svg?seed=${randomSeed}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
+
     form.setValue("avatar_url", newUrl, { shouldDirty: true });
   };
 

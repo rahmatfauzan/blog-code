@@ -28,6 +28,7 @@ export async function updateProfile(data: ProfileFormValues) {
   const { error } = await supabase
     .from("profiles")
     .update({
+      avatar_url: validated.data.avatar_url,
       full_name: validated.data.full_name,
       username: validated.data.username,
       bio: validated.data.bio,

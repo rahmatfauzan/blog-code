@@ -27,7 +27,7 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { User } from "@supabase/supabase-js";
+import { useUser } from "@/lib/hook/use-user";
 
 const sidebarItems = [
   { title: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -47,19 +47,12 @@ const menuItemVariants = {
 
 export function MobileSidebar() {
   const pathname = usePathname();
+  const { user, profile } = useUser();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
   const supabase = createClient();
 
-  useEffect(() => {
-    const getUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      setUser(data.user);
-    };
-    getUser();
-  }, []);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -77,7 +70,7 @@ export function MobileSidebar() {
   };
 
   const userName = user?.user_metadata?.full_name || "User";
-  const userAvatar = user?.identities?.[0]?.identity_data?.avatar_url  || user?.user_metadata?.avatar_url || "";
+  const userAvatar = profile?.avatar_url || "";
   const userInitial = userName.charAt(0).toUpperCase();
 
   return (

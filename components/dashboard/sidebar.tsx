@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/tooltip";
 import { motion, AnimatePresence } from "framer-motion";
 import { User } from "@supabase/supabase-js";
+import { useUser } from "@/lib/hook/use-user";
 
 const sidebarItems = [
   { title: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -37,21 +38,16 @@ const sidebarItems = [
   { title: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
-export function DashboardSidebar({ user }: { user: User }) {
+export function DashboardSidebar() {
+   const {user, profile}= useUser();
+   console.log("Sidebar User:", profile);
+
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
 
   // State
   const [isExpanded, setIsExpanded] = useState(true);
-
-  // Fetch User Client-Side untuk Profile
-  useEffect(() => {
-    const getUser = async () => {
-      const { data } = await supabase.auth.getUser();
-    };
-    getUser();
-  }, []);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -67,11 +63,9 @@ export function DashboardSidebar({ user }: { user: User }) {
   // Helper Data User
   const userName = user?.user_metadata?.full_name || "User";
   const userEmail = user?.email || "";
-  const userAvatar =
-    user?.identities?.[0]?.identity_data?.avatar_url ||
-    user.user_metadata.avatar_url ||
-    "";
+  const userAvatar = profile?.avatar_url || "";
   const userInitial = userName.charAt(0).toUpperCase();
+  console.log("User Avatar URL:", userAvatar);
 
   return (
     <TooltipProvider delayDuration={0}>
