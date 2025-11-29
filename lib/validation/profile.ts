@@ -22,7 +22,7 @@ export const profileSchema = z.object({
     .optional()
     .or(z.literal("")),
 
-  bio: z.string().max(160, "Bio maksimal 160 karakter").optional(),
+  bio: z.string().max(500, "Bio maksimal 500 karakter").optional(),
 
   website: z.string().url("URL tidak valid").optional().or(z.literal("")),
   github_url: z

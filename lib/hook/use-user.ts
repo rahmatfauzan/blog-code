@@ -3,43 +3,73 @@
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
+import { Profile } from "../types";
 
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null); // State baru untuk Profile
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
   useEffect(() => {
-    // 1. Cek sesi saat ini (Initial Load)
-    const getUser = async () => {
+    // Helper: Ambil data profile berdasarkan ID user
+    const fetchProfile = async (userId: string) => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      if (!error && data) {
+        setProfile(data);
+      } else {
+        setProfile(null);
+      }
+    };
+
+    // 1. Inisialisasi Awal
+    const init = async () => {
       try {
         const {
           data: { user },
         } = await supabase.auth.getUser();
         setUser(user);
+
+        if (user) {
+          await fetchProfile(user.id);
+        }
       } catch (error) {
-        console.error("Error loading user:", error);
+        console.error("Error initializing user:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    getUser();
+    init();
 
-    // 2. Pasang pendengar (Listener) Real-time
-    // Ini ajaibnya: Jika user login/logout, fungsi ini otomatis jalan.
+    // 2. Listener Real-time (Login/Logout/Refresh)
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+
+      if (currentUser) {
+        // Jika login, ambil profilnya
+        await fetchProfile(currentUser.id);
+      } else {
+        // Jika logout, kosongkan profil
+        setProfile(null);
+      }
+
       setLoading(false);
     });
 
-    // Bersihkan listener saat komponen dicopot (Unmount)
     return () => {
       subscription.unsubscribe();
     };
   }, []);
 
-  return { user, loading };
+  // Return lengkap: User Auth + Profile Database
+  return { user, profile, loading };
 }

@@ -64,7 +64,7 @@ export function SnippetItem({ snippet }: SnippetItemProps) {
         <div className="min-w-0 space-y-1">
           <div className="flex items-center gap-2">
             <Link 
-              href={`/snippet/${snippet.slug}`} 
+              href={`snippets/${snippet.id}`} 
               className="font-semibold text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 truncate text-base"
             >
               {snippet.title}
@@ -101,7 +101,7 @@ export function SnippetItem({ snippet }: SnippetItemProps) {
       {/* KANAN: Actions */}
       <div className="flex items-center gap-2">
         {/* Edit Button (Langsung) */}
-        <Link href={`/dashboard/snippets/${snippet.id}/edit`}>
+        <Link href={`snippets/${snippet.id}/edit`}>
           <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-indigo-600 hidden sm:flex">
             <Pencil className="w-4 h-4" />
           </Button>
@@ -115,12 +115,12 @@ export function SnippetItem({ snippet }: SnippetItemProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">
-            <Link href={`/dashboard/snippets/${snippet.id}/edit`}>
+            <Link href={`snippets/${snippet.id}/edit`}>
               <DropdownMenuItem className="cursor-pointer">
                 <Pencil className="w-4 h-4 mr-2" /> Edit
               </DropdownMenuItem>
             </Link>
-            <Link href={`/snippet/${snippet.slug}`} target="_blank">
+            <Link href={`snippets/${snippet.id}`} target="_blank">
               <DropdownMenuItem className="cursor-pointer">
                 <Globe className="w-4 h-4 mr-2" /> Lihat Live
               </DropdownMenuItem>

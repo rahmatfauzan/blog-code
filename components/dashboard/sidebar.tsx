@@ -38,20 +38,21 @@ const sidebarItems = [
   { title: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
-export function DashboardSidebar() {
+
+
+
+export function DashboardSidebar({ user }: { user: User }) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
 
   // State
   const [isExpanded, setIsExpanded] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
 
   // Fetch User Client-Side untuk Profile
   useEffect(() => {
     const getUser = async () => {
       const { data } = await supabase.auth.getUser();
-      setUser(data.user);
     };
     getUser();
   }, []);
@@ -70,7 +71,8 @@ export function DashboardSidebar() {
   // Helper Data User
   const userName = user?.user_metadata?.full_name || "User";
   const userEmail = user?.email || "";
-  const userAvatar = user?.user_metadata?.avatar_url || "";
+  const userAvatar = user?.identities?.[0]?.identity_data?.avatar_url ||
+    user.user_metadata.avatar_url || "";
   const userInitial = userName.charAt(0).toUpperCase();
 
   return (
@@ -143,7 +145,7 @@ export function DashboardSidebar() {
                     {userName}
                   </span>
                   <span className="text-xs text-slate-500 truncate">
-                    Free Plan
+                    {userEmail}
                   </span>
                 </motion.div>
               )}

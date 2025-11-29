@@ -78,7 +78,7 @@ export function MobileSidebar() {
   };
 
   const userName = user?.user_metadata?.full_name || "User";
-  const userAvatar = user?.user_metadata?.avatar_url || "";
+  const userAvatar = user?.identities?.[0]?.identity_data?.avatar_url  || user?.user_metadata?.avatar_url || "";
   const userInitial = userName.charAt(0).toUpperCase();
 
   return (

@@ -33,7 +33,9 @@ export function UserNav({ user }: { user: User }) {
 
   // Ambil inisial nama (contoh: "Rahmat Fauzan" -> "R")
   const initial = user.user_metadata.full_name?.[0]?.toUpperCase() || "U";
-  const avatarUrl = user.user_metadata.avatar_url;
+  const avatarUrl =
+    user?.identities?.[0]?.identity_data?.avatar_url ||
+    user.user_metadata.avatar_url;
 
   return (
     <DropdownMenu>

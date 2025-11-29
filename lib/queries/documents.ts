@@ -24,7 +24,7 @@ export const documents = {
           username,
           avatar_url
         ),
-        document_tags!inner (
+        document_tags (
           tag:tags (
             name,
             slug
@@ -141,7 +141,7 @@ export const documents = {
         `
       *,
       author:profiles!author_id ( full_name, username, avatar_url ),
-      document_tags!inner ( tag:tags ( name, slug ) ),
+      document_tags ( tag:tags ( name, slug ) ),
       likes(count),
       bookmarks(count)
     `,
@@ -283,5 +283,52 @@ export const documents = {
     }));
 
     return { data: transformed, total: count || 0 };
+  },
+
+  async getById(id: string): Promise<SnippetWithAuthor | null> {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+      .from("documents")
+      .select(
+        `
+       *,
+        author:profiles!author_id (
+          full_name,
+          username,
+          avatar_url
+        ),
+        document_tags (
+          tag:tags (
+            name,
+            slug
+          )
+        ),
+        likes(count),
+        bookmarks(count)
+      `
+      )
+      .eq("id", id)
+
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    // Transformasi Data
+    const transformed: SnippetWithAuthor = {
+      ...data,
+      tags: data.document_tags.map((dt: any) => ({
+        name: dt.tag.name,
+        slug: dt.tag.slug,
+      })),
+      likes: data.likes?.[0]?.count || 0,
+      bookmark: data.bookmarks?.[0]?.count || 0,
+
+      document_tags: undefined,
+    };
+
+    return transformed;
   },
 };

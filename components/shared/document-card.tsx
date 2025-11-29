@@ -26,9 +26,10 @@ function formatRelativeDate(dateString: string) {
 
 interface SnippetCardProps {
   snippet: SnippetWithAuthor;
+  customLink?: string;
 }
 
-export function SnippetCard({ snippet }: SnippetCardProps) {
+export function SnippetCard({ snippet, customLink }: SnippetCardProps) {
   // Fallback Data
   const authorName = snippet.author?.full_name || "Anonymous";
   const authorUsername = snippet.author?.username || "user";
@@ -40,7 +41,7 @@ export function SnippetCard({ snippet }: SnippetCardProps) {
 
   return (
     <div className="h-full">
-      <Link href={`/snippet/${snippet.slug}`} className="block h-full">
+      <Link href={customLink || `/snippet/${snippet.slug}`} className="block h-full">
         <div className="group h-full p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:shadow-xl hover:shadow-indigo-500/10 dark:hover:shadow-indigo-500/5 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300 relative flex flex-col">
           {/* --- HEADER --- */}
           <div className="flex items-center justify-between mb-4">
