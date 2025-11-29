@@ -209,7 +209,7 @@ export default async function PublicSnippetPage({ params }: PageProps) {
       </div>
 
       <div className="flex flex-col gap-6">
-        <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="rounded-xl overflow-hidden">
           {snippet.content ? (
             <CodeViewer code={snippet.content} language={snippet.language} />
           ) : (

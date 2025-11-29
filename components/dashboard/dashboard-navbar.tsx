@@ -8,6 +8,7 @@ import { MobileSidebar } from "@/components/dashboard/mobile-sidebar";
 import { User } from "@supabase/supabase-js";
 import { motion } from "framer-motion";
 import { useUser } from "@/lib/hook/use-user";
+import { Button } from "../ui/button";
 
 export function DashboardNavbar() {
   const { user, profile } = useUser();
@@ -37,7 +38,12 @@ export function DashboardNavbar() {
         {/* KANAN: Actions */}
         <div className="flex items-center gap-3">
           <ThemeSwitcher />
-          {user && <UserNav user={user} profile={profile} />}
+          <Link href="/">
+            <Button className="w-full sm:w-auto text-xs border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800">
+              Home
+            </Button>
+          </Link>
+          {user && <UserNav />}
         </div>
       </div>
     </header>

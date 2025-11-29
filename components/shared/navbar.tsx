@@ -73,7 +73,7 @@ export async function Navbar() {
               </Link>
 
               {/* User Menu */}
-              <UserNav user={user} />
+              <UserNav />
             </>
           ) : (
             // Guest Actions - Enhanced

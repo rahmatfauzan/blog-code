@@ -21,8 +21,10 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { createClient } from "@/lib/supabase/client"; // Pakai Client Supabase
 import { useRouter } from "next/navigation";
+import { useUser } from "@/lib/hook/use-user";
 
-export function UserNav({ user, profile }: { user: User; profile: any }) {
+export function UserNav() {
+  const {user, profile} = useUser();
   const router = useRouter();
   const supabase = createClient();
 
@@ -32,7 +34,7 @@ export function UserNav({ user, profile }: { user: User; profile: any }) {
   };
 
   // Ambil inisial nama (contoh: "Rahmat Fauzan" -> "R")
-  const initial = user.user_metadata.full_name?.[0]?.toUpperCase() || "U";
+  const initial = user?.user_metadata.full_name?.[0]?.toUpperCase() || "U";
   const avatarUrl = profile?.avatar_url || "";
 
   return (
@@ -40,7 +42,7 @@ export function UserNav({ user, profile }: { user: User; profile: any }) {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-9 w-9 rounded-full">
           <Avatar className="h-9 w-9 border">
-            <AvatarImage src={avatarUrl} alt={user.email || ""} />
+            <AvatarImage src={avatarUrl} alt={user?.email || ""} />
             <AvatarFallback>{initial}</AvatarFallback>
           </Avatar>
         </Button>
@@ -49,10 +51,10 @@ export function UserNav({ user, profile }: { user: User; profile: any }) {
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
-              {user.user_metadata.full_name}
+              {user?.user_metadata.full_name}
             </p>
             <p className="text-xs leading-none text-muted-foreground">
-              {user.email}
+              {user?.email}
             </p>
           </div>
         </DropdownMenuLabel>
@@ -64,7 +66,7 @@ export function UserNav({ user, profile }: { user: User; profile: any }) {
               Dashboard
             </DropdownMenuItem>
           </Link>
-          <Link href={`/u/${user.user_metadata.username}`}>
+          <Link href={`/u/${user?.user_metadata.username}`}>
             <DropdownMenuItem className="cursor-pointer">
               <UserIcon className="mr-2 h-4 w-4" />
               Profil Saya
