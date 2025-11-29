@@ -10,9 +10,13 @@ import { motion } from "framer-motion";
 import { useUser } from "@/lib/hook/use-user";
 import { Button } from "../ui/button";
 
-export function DashboardNavbar() {
-  const { user, profile } = useUser();
-
+export function DashboardNavbar({
+  user,
+  profile,
+}: {
+  user: User;
+  profile: any;
+}) {
   return (
     <header className="sticky top-0 z-30 h-16 border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm">
       <div className="h-full px-4 md:px-6 flex items-center justify-between">

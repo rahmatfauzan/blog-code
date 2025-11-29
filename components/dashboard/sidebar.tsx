@@ -38,12 +38,7 @@ const sidebarItems = [
   { title: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
-export function DashboardSidebar() {
-  //  const {user, profile}= useUser();
-  const { user, profile } = useUser();
-   
-  //  console.log("Sidebar User Object:", user);
-  //  console.log("Sidebar User:", profile);
+export function DashboardSidebar({ user, profile }: { user: User; profile: any }) {
 
   const pathname = usePathname();
   const router = useRouter();

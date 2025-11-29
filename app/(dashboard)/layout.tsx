@@ -13,8 +13,13 @@ export default async function DashboardLayout({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
   if (!user) redirect("/login");
+
+  const profileRes = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
 
   return (
     // 1. Container Utama: H-Screen & Overflow Hidden (Supaya scroll ada di dalam area konten, bukan body)
@@ -24,7 +29,7 @@ export default async function DashboardLayout({
           - Hapus 'w-64' (Biarkan komponen Sidebar yang menentukan lebarnya sendiri via Framer Motion).
       */}
       <aside className="hidden md:block shrink-0 h-full">
-        <DashboardSidebar />
+        <DashboardSidebar user={user} profile={profileRes.data} />
       </aside>
 
       {/* 3. Main Content Wrapper:
@@ -33,7 +38,7 @@ export default async function DashboardLayout({
       */}
       <div className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300">
         {/* Navbar */}
-        <DashboardNavbar/>
+        <DashboardNavbar user={user} profile={profileRes.data}/>
 
         {/* Konten Scrollable */}
         <main className="flex-1 overflow-y-auto p-4 md:p-8">{children}</main>

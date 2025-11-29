@@ -24,9 +24,9 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@/lib/hook/use-user";
 
 export function UserNav() {
-  const {user, profile} = useUser();
   const router = useRouter();
   const supabase = createClient();
+  const { user, profile } = useUser();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
