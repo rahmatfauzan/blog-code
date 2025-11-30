@@ -25,7 +25,7 @@ export default async function PublicLayout({
     <div className="relative flex min-h-screen flex-col bg-slate-50 dark:bg-slate-950">
       <Navbar user={user} profile={profileRes.data} />
       <main className="flex-1 pb-20 md:pb-0">{children}</main>
-      <MobileNav user={user} />
+      <MobileNav user={user} profile={profileRes.data} />
     </div>
   );
 }

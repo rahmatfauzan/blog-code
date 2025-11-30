@@ -36,6 +36,7 @@ export function UserNav({ user, profile }: { user: User; profile: any }) {
   // Ambil inisial nama (contoh: "Rahmat Fauzan" -> "R")
   const initial = user?.user_metadata.full_name?.[0]?.toUpperCase() || "U";
   const avatarUrl = profile?.avatar_url || "";
+  console.log("UserNav render with user:", profile);
 
   return (
     <DropdownMenu>
@@ -66,7 +67,7 @@ export function UserNav({ user, profile }: { user: User; profile: any }) {
               Dashboard
             </DropdownMenuItem>
           </Link>
-          <Link href={`/u/${user?.user_metadata.username}`}>
+          <Link href={`/u/${profile?.username || ""}`}>
             <DropdownMenuItem className="cursor-pointer">
               <UserIcon className="mr-2 h-4 w-4" />
               Profil Saya

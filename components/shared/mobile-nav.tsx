@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 
 interface MobileNavProps {
   user: SupabaseUser | null;
+  profile: any;
 }
 
 interface MenuItem {
@@ -19,7 +20,7 @@ interface MenuItem {
   isHighlight?: boolean;
 }
 
-export function MobileNav({ user }: MobileNavProps) {
+export function MobileNav({ user, profile }: MobileNavProps) {
   const pathname = usePathname();
 
   // Menu untuk user yang sudah login
@@ -51,10 +52,10 @@ export function MobileNav({ user }: MobileNavProps) {
     },
     {
       name: "Profile",
-      href: `/u/${user?.user_metadata.username || ""}`,
+      href: `/u/${profile?.username || ""}`,
       icon: User,
       active:
-        pathname === `/u/${user?.user_metadata.username}` ||
+        pathname === `/u/${profile?.username}` ||
         pathname.startsWith("/dashboard"),
     },
   ];
