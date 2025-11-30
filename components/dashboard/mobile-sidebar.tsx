@@ -53,7 +53,6 @@ export function MobileSidebar() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const supabase = createClient();
 
-
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
@@ -71,6 +70,7 @@ export function MobileSidebar() {
 
   const userName = user?.user_metadata?.full_name || "User";
   const userAvatar = profile?.avatar_url || "";
+  const userEmail = user?.email || "No Email";
   const userInitial = userName.charAt(0).toUpperCase();
 
   return (
@@ -99,7 +99,6 @@ export function MobileSidebar() {
 
         {/* --- HEADER CUSTOM (Mac Dots + Logo + Close) --- */}
         <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100 dark:border-slate-800/50 shrink-0">
-
           {/* Tengah: Logo CodeBox */}
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center shadow-sm">
@@ -134,7 +133,7 @@ export function MobileSidebar() {
               <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
                 {userName}
               </p>
-              <p className="text-xs text-slate-500 truncate">Free Plan</p>
+              <p className="text-xs text-slate-500 truncate">{userEmail}</p>
             </div>
           </div>
         </div>
