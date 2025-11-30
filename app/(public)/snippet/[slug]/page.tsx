@@ -139,7 +139,7 @@ export default async function PublicSnippetPage({ params }: PageProps) {
                   variant="outline"
                   className="cursor-pointer hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-colors"
                 >
-                  #{tag.name}t
+                  #{tag.name}
                 </Badge>
               </Link>
             ))}
