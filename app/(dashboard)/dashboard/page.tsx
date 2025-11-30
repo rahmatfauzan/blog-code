@@ -71,7 +71,7 @@ export default async function DashboardPage() {
                 <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
                   Lengkapi Profil Developer
                 </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5 truncate">
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
                   Tambahkan bio dan sosmed agar profil terlihat profesional.
                 </p>
               </div>
