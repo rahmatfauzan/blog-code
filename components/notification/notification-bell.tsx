@@ -98,17 +98,6 @@ export function NotificationBell({
             ))}
           </div>
         )}
-
-        {notifications.length > 0 && (
-          <>
-            <DropdownMenuSeparator />
-            <Link href="/notifications">
-              <DropdownMenuItem className="cursor-pointer justify-center text-indigo-600 font-medium">
-                Lihat Semua Notifikasi
-              </DropdownMenuItem>
-            </Link>
-          </>
-        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
