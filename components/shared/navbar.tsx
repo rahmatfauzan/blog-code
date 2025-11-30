@@ -7,11 +7,7 @@ import { ThemeSwitcher } from "./theme-switcher";
 import { NotificationBellWrapper } from "../notification/notification-bell-wrapper";
 import { NavMenu } from "./nav-menu";
 
-export async function Navbar() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export async function Navbar( { user, profile }: { user: any; profile: any } ) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200/50 dark:border-slate-800/50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-slate-950/70">
@@ -73,7 +69,7 @@ export async function Navbar() {
               </Link>
 
               {/* User Menu */}
-              <UserNav />
+              <UserNav user={user} profile={profile} />
             </>
           ) : (
             // Guest Actions - Enhanced
