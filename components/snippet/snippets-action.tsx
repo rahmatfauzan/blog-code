@@ -1,11 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation"; // <--- 1. IMPORT INI
+import { useRouter } from "next/navigation";
 import { Heart, Bookmark, Share2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { toggleLike, toggleBookmark, getUserInteraction } from "@/lib/actions/interaction";
+import {
+  toggleLike,
+  toggleBookmark,
+  getUserInteraction,
+} from "@/lib/actions/interaction";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/lib/hook/use-user";
 
@@ -14,8 +18,11 @@ interface SnippetActionsProps {
   initialLikeCount: number;
 }
 
-export function SnippetActions({ documentId, initialLikeCount }: SnippetActionsProps) {
-  const { user } = useUser();
+export function SnippetActions({
+  documentId,
+  initialLikeCount,
+}: SnippetActionsProps) {
+  const { user, loading: userLoading } = useUser(); // PERBAIKAN: Pakai 'loading' bukan 'isLoading'
   const router = useRouter();
 
   const [likes, setLikes] = useState(initialLikeCount);
@@ -23,50 +30,73 @@ export function SnippetActions({ documentId, initialLikeCount }: SnippetActionsP
   const [hasBookmarked, setHasBookmarked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Debug: Log user state
   useEffect(() => {
-    if (!user) {
-      setIsLoading(false);
-      return;
-    }
-    getUserInteraction(documentId).then((res) => {
-      setHasLiked(res.hasLiked);
-      setHasBookmarked(res.hasBookmarked);
-      setIsLoading(false);
-    });
-  }, [documentId, user]);
+    console.log("User state:", { user, userLoading });
+  }, [user, userLoading]);
+
+  useEffect(() => {
+    // Hanya fetch interaction jika user sudah di-load
+    if (userLoading) return;
+
+    getUserInteraction(documentId)
+      .then((res) => {
+        setHasLiked(res.hasLiked);
+        setHasBookmarked(res.hasBookmarked);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching user interaction:", err);
+        setIsLoading(false);
+      });
+  }, [documentId, user, userLoading]);
 
   // --- HANDLE LIKE ---
   const handleLike = async () => {
+    // PERBAIKAN: Tunggu sampai userLoading selesai
+    if (userLoading) {
+      toast.info("Tunggu sebentar...");
+      return;
+    }
+
     if (!user) {
+      console.log("User not found, redirecting to login");
       toast.error("Login dulu untuk menyukai snippet ini");
       router.push("/login");
       return;
     }
 
-    // Optimistic Update (Agar UI terasa cepat)
+    // Optimistic Update
     const previousLiked = hasLiked;
     const previousCount = likes;
-    
+
     setHasLiked(!hasLiked);
     setLikes(hasLiked ? likes - 1 : likes + 1);
 
     try {
       const res = await toggleLike(documentId);
-      if (res.error) throw new Error();
+      if (res.error) throw new Error(res.error);
 
-      router.refresh(); 
-
+      router.refresh();
     } catch (err) {
       // Rollback jika gagal
       setHasLiked(previousLiked);
       setLikes(previousCount);
       toast.error("Gagal memproses like");
+      console.error("Like error:", err);
     }
   };
 
   // --- HANDLE BOOKMARK ---
   const handleBookmark = async () => {
+    // PERBAIKAN: Tunggu sampai userLoading selesai
+    if (userLoading) {
+      toast.info("Tunggu sebentar...");
+      return;
+    }
+
     if (!user) {
+      console.log("User not found, redirecting to login");
       toast.error("Login dulu untuk menyimpan snippet");
       router.push("/login");
       return;
@@ -77,17 +107,19 @@ export function SnippetActions({ documentId, initialLikeCount }: SnippetActionsP
 
     try {
       const res = await toggleBookmark(documentId);
-      if (res.error) throw new Error();
-      
-      if (res.status === "added") toast.success("Disimpan ke koleksi");
-      else toast.info("Dihapus dari koleksi");
+      if (res.error) throw new Error(res.error);
 
-      // <--- 4. TAMBAHKAN INI JUGA: Agar angka bookmark di header update
+      if (res.status === "added") {
+        toast.success("Disimpan ke koleksi");
+      } else {
+        toast.info("Dihapus dari koleksi");
+      }
+
       router.refresh();
-
     } catch (err) {
       setHasBookmarked(previousBookmarked);
       toast.error("Gagal memproses bookmark");
+      console.error("Bookmark error:", err);
     }
   };
 
@@ -98,19 +130,20 @@ export function SnippetActions({ documentId, initialLikeCount }: SnippetActionsP
 
   return (
     <div className="flex items-center gap-2">
-      {/* ... (Sisa kode render tombol TETAP SAMA) ... */}
+      {/* Like Button */}
       <Button
         variant="outline"
         size="sm"
         onClick={handleLike}
+        disabled={isLoading || userLoading}
         className={cn(
           "gap-2 transition-colors",
-          hasLiked 
-            ? "border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-400" 
+          hasLiked
+            ? "border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-400"
             : "hover:text-rose-600"
         )}
       >
-        {isLoading ? (
+        {isLoading || userLoading ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
           <Heart className={cn("h-4 w-4", hasLiked && "fill-current")} />
@@ -118,11 +151,12 @@ export function SnippetActions({ documentId, initialLikeCount }: SnippetActionsP
         <span>{likes}</span>
       </Button>
 
-      {/* ... Tombol Bookmark & Share ... */}
+      {/* Bookmark Button */}
       <Button
         variant="outline"
         size="sm"
         onClick={handleBookmark}
+        disabled={isLoading || userLoading}
         className={cn(
           "gap-2 transition-colors",
           hasBookmarked
@@ -130,15 +164,26 @@ export function SnippetActions({ documentId, initialLikeCount }: SnippetActionsP
             : "hover:text-indigo-600"
         )}
       >
-        {isLoading ? (
+        {isLoading || userLoading ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
-          <Bookmark className={cn("h-4 w-4", hasBookmarked && "fill-current")} />
+          <Bookmark
+            className={cn("h-4 w-4", hasBookmarked && "fill-current")}
+          />
         )}
-        <span className="hidden sm:inline">{hasBookmarked ? "Saved" : "Save"}</span>
+        <span className="hidden sm:inline">
+          {hasBookmarked ? "Saved" : "Save"}
+        </span>
       </Button>
 
-      <Button variant="outline" size="icon" className="h-9 w-9" onClick={handleShare}>
+      {/* Share Button */}
+      <Button
+        variant="outline"
+        size="icon"
+        className="h-9 w-9"
+        onClick={handleShare}
+        title="Share snippet"
+      >
         <Share2 className="h-4 w-4" />
       </Button>
     </div>
