@@ -149,20 +149,22 @@ export default async function PublicSnippetPage({ params }: PageProps) {
         {/* Meta Info Bar */}
         <div className="flex flex-wrap items-start sm:items-center  justify-between gap-4 text-sm text-slate-500 dark:text-slate-400 pt-4 border-t border-slate-100 dark:border-slate-800">
           {/* Author & Date */}
-          <div className="flex items-center gap-2 sm:gap-6 flex-col sm:flex-row justify-center">
-            <div className="flex items-center gap-2">
-              <Avatar className="h-8 w-8 border border-slate-200 dark:border-slate-700">
-                <AvatarImage src={snippet.author?.avatar_url || ""} />
-                <AvatarFallback>{authorInitials}</AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col">
-                <span className="font-medium text-slate-900 dark:text-white leading-none">
-                  {authorName}
-                </span>
-                <span className="text-xs">@{authorUsername}</span>
+          <Link href={`/u/${authorUsername}`}>
+            <div className="flex items-center gap-2 sm:gap-6 flex-col sm:flex-row justify-center">
+              <div className="flex items-center gap-2">
+                <Avatar className="h-8 w-8 border border-slate-200 dark:border-slate-700">
+                  <AvatarImage src={snippet.author?.avatar_url || ""} />
+                  <AvatarFallback>{authorInitials}</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col">
+                  <span className="font-medium text-slate-900 dark:text-white leading-none">
+                    {authorName}
+                  </span>
+                  <span className="text-xs">@{authorUsername}</span>
+                </div>
               </div>
             </div>
-          </div>
+          </Link>
 
           {/* Stats */}
           <div className="flex items-center gap-4">

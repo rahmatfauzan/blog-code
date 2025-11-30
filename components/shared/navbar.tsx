@@ -36,14 +36,6 @@ export async function Navbar( { user, profile }: { user: any; profile: any } ) {
 
         {/* KANAN: Actions */}
         <div className="flex items-center gap-2">
-          {/* Search Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-900 hidden md:flex transition-all"
-          >
-            <Search className="w-4 h-4" />
-          </Button>
 
           {/* Theme Switcher */}
           <ThemeSwitcher />

@@ -14,12 +14,11 @@ export default async function PublicLayout({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
 
   const profileRes = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", user.id)
+    .eq("id", user?.id)
     .single();
   return (
     <div className="relative flex min-h-screen flex-col bg-slate-50 dark:bg-slate-950">
