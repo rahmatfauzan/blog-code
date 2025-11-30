@@ -74,6 +74,10 @@ import {
 } from "@/lib/actions/snippets";
 import { TagInput } from "./tag-input";
 import { AIMetaGenerator } from "./ai-meta-generator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { CodeEditor } from "../ui/code-editor";
+import { highlight } from "prismjs";
+import { CodeViewer } from "../shared/code-viewer";
 
 interface SnippetFormProps {
   initialData?: Partial<SnippetFormValues> & { id: string };
@@ -135,6 +139,7 @@ export function SnippetForm({
   const currentTags = form.watch("tags");
   const descriptionValue = form.watch("description");
   const visibilityValue = form.watch("visibility");
+  const contentValue = form.watch("content");
 
   // Filter tag suggestions
   useEffect(() => {
@@ -404,43 +409,81 @@ export function SnippetForm({
             </motion.div>
 
             {/* Code Editor - Compact */}
-            <motion.div
-              variants={itemVariants}
-              className="rounded-lg border overflow-hidden bg-slate-950"
-            >
-              <div className="bg-slate-900 px-3 py-1.5 flex items-center justify-between border-b border-slate-800">
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-1">
-                    <div className="h-2 w-2 rounded-full bg-red-500"></div>
-                    <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
-                    <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                  </div>
-                  <span className="text-[10px] text-slate-500 font-mono">
-                    {languageValue}
-                  </span>
-                </div>
-                <Badge
-                  variant="outline"
-                  className="text-[10px] h-4 bg-slate-800 border-slate-700"
-                >
-                  <Code className="h-2.5 w-2.5 mr-1" />
-                  Editor
-                </Badge>
-              </div>
-
+            <motion.div variants={itemVariants}>
               <FormField
                 control={form.control}
                 name="content"
                 render={({ field }) => (
                   <FormItem>
+                    <div className="flex items-center justify-between mb-2">
+                      <FormLabel>Kode</FormLabel>
+                      <Badge
+                        variant="outline"
+                        className="font-mono text-[10px]"
+                      >
+                        Markdown Supported
+                      </Badge>
+                    </div>
+
                     <FormControl>
-                      <Textarea
-                        {...field}
-                        placeholder="// Code here..."
-                        className="min-h-[300px] font-mono text-xs border-0 rounded-none resize-y bg-slate-950 text-slate-100 placeholder:text-slate-600 focus-visible:ring-0"
-                      />
+                      <Tabs defaultValue="write" className="w-full">
+                        <TabsList className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-0.5 h-9">
+                          <TabsTrigger
+                            value="write"
+                            className="text-xs h-8 px-4 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 shadow-none data-[state=active]:shadow-sm"
+                          >
+                            Write
+                          </TabsTrigger>
+                          <TabsTrigger
+                            value="preview"
+                            className="text-xs h-8 px-4 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 shadow-none data-[state=active]:shadow-sm"
+                          >
+                            Preview
+                          </TabsTrigger>
+                        </TabsList>
+
+                        {/* TAB WRITE (Editor) */}
+                        <TabsContent value="write" className="mt-2">
+                          <FormField
+                            control={form.control}
+                            name="content"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Textarea
+                                    {...field}
+                                    placeholder="// Code here..."
+                                    className="min-h-[300px] font-mono text-xs border-0 rounded-none resize-y bg-slate-950 text-slate-100 placeholder:text-slate-600 focus-visible:ring-0"
+                                  />
+                                </FormControl>
+                                <FormMessage className="px-3 pb-2 text-xs" />
+                              </FormItem>
+                            )}
+                          />
+                        </TabsContent>
+
+                        {/* TAB PREVIEW (Render Hasil) */}
+                        <TabsContent value="preview" className="mt-2">
+                          <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden min-h-[400px] bg-white dark:bg-slate-950">
+                            {contentValue ? (
+                              // Gunakan CodeViewer untuk merender Markdown/Code
+                              <CodeViewer
+                                code={contentValue}
+                                language={languageValue}
+                                className="p-6 border-none shadow-none" // Reset style agar pas di form
+                              />
+                            ) : (
+                              <div className="flex flex-col items-center justify-center h-[400px] text-slate-400">
+                                <p className="text-sm">
+                                  Belum ada konten untuk dipreview
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </TabsContent>
+                      </Tabs>
                     </FormControl>
-                    <FormMessage className="px-3 pb-2 text-xs" />
+                    <FormMessage />
                   </FormItem>
                 )}
               />
